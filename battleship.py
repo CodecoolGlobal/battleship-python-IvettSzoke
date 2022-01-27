@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import *
 import time
 
+PLAYER_1_COORDINATES=[]
+PLAYER_2_COORDINATES=[]
 #################### placement phase
 def ask_board_size():
     is_board_size_valid = False
@@ -88,7 +90,7 @@ def available_ships_at_start(board_size):
     }
     return ship_config[board_size]
 
-def place_ships(board):
+def place_ships(board, turn):
     board_size = len(board[0])
     ships = available_ships_at_start(board_size)
     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
@@ -112,10 +114,15 @@ def place_ships(board):
                 continue
             else:
                 break
-        all_ship_coordinates.append(collect_ship_coordinates(ship, direction, row_index, col_index))
+        if turn==1:
+            PLAYER_1_COORDINATES.append(collect_ship_coordinates(ship, direction, row_index, col_index))
+            print(PLAYER_1_COORDINATES)
+        elif turn==2:
+            PLAYER_2_COORDINATES.append(collect_ship_coordinates(ship, direction, row_index, col_index))
+            print(PLAYER_2_COORDINATES)
         mark_ship(board, ship, direction, row_index, col_index)
         print_board(board)
-    print(all_ship_coordinates)
+  
     return board
 
 def is_on_right_place(board, board_size, ship, direction, row_index, col_index):
@@ -227,41 +234,9 @@ def has_won(ships, shooting_board):
                 return False
     return True
 
-# def has_won_old(board, guessed_row, guessed_col,n):
-#     # won = False
-#     # while not won:
-    
-#     rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-#     num_of_x = 0
-#     num_of_s = 0
-#     for sub_list in board:        
-#         num_of_x += sub_list.count('X')
-#         num_of_s = num_of_s + sub_list.count('S')
-#     if num_of_x == 0:
-#         print(f"Player {n} wins!")
-#     row_i = rows.index(guessed_row)
-#     col_i = (int(guessed_col) - 1)
-#     if board[row_i][col_i] == '0':
-#         board[row_i][col_i] = 'M'
-#         print(Fore.RED + "\nYou've missed!\n") 
-#     if board[row_i][col_i] in ['M', 'S', 'H']:
-#         print(Fore.RED + "\nYou guessed that one already.\n")
-#     if board[row_i][col_i] == 'X':
-#         print(Fore.GREEN + "\nYou've hit a ship!\n")
-#     if board[row_i][col_i+1] == '0'and board[row_i+1][col_i] == '0' and board[row_i-1][col_i] == '0' and board[row_i][col_i-1] == '0':
-#         board[row_i][col_i] == "S"
-#         print("You've sunk a ship!")
-#     # if board[row_i][col_i+1] == '0' and board[row_i-1][col_i] == '0' and board[row_i][col_i-1] == '0' and 
-#     # return won
 
-def edit_boards_during_game(covered_board, ship_board, shot):
-    """
-    covered board:  the board which records the players shots (undisc, miss, hit, sunk)
-    ship board:     the board which stores the enemies ships
-    shot:           list of 2: [row, column], coordinates of the actual shot
+def edit_boards_during_game(covered_board, ship_board, shot, turn):
 
-    The signs can be edited in the next 4 rows
-    """
     ship_sign = 'X'
     missed = 'M'
     hit = 'H'
@@ -277,50 +252,67 @@ def edit_boards_during_game(covered_board, ship_board, shot):
         print("\nYou've missed!\n")
 
     # place hits if:
-    if ship_board[row][column] == ship_sign:
-        ship_board[row][column] = hit
-        covered_board[row][column] = hit
-        print("\nYou've hit a ship!\n")
+    # if ship_board[row][column] == ship_sign:
+    #     ship_board[row][column] = hit
+    #     covered_board[row][column] = hit
+    #     print("\nYou've hit a ship!\n")
 
-        
+    if turn == 1:
+        coordinates = PLAYER_1_COORDINATES
+    elif turn == 2:
+        coordinates = PLAYER_2_COORDINATES
+    # shoot = ask_shooting_input(len(ship_board))
 
-    # overwrite hits to sunk if:
-    # That could be a separate function
+    shoot = (row, column)
+    print(f'shoot: {shoot}')
+
+    for i, list in enumerate(coordinates):
+        if len(list) == 1:
+            for index, element in enumerate(list):
+                if shoot == element:
+                    list[index] = 'S'
+        else:
+            for index, element in enumerate(list):
+                if shoot == element:
+                    list[index] = 'H'
+                    print("\nYou've hit a ship!\n")
+                    if all(list):
+                        win_list = ['S' for i in list]
+                        coordinates[i] = win_list
+
     return covered_board, ship_board
 
 def the_game():
     print(Fore.RED + "\nWelcome Players! This is the famous BATTLESHIP game!\n")
     grid = ask_board_size()
+    turn = 1
     board_1 = init_board(grid)
     print_board(board_1)
-    board_1 = place_ships(board_1)
+    board_1 = place_ships(board_1, turn)
     time.sleep(2.4)
     app = Window()
     time.sleep(2.4)
     print(Fore.RED + "\nNext player's placement phase:\n")
     print(Fore.WHITE)
+    turn = 2
     board_2 = init_board(grid)
-    board_2 = place_ships(board_2)
+    board_2 = place_ships(board_2, turn)
     print(Fore.GREEN + "\nShips are placed. Let's play!\n")
     print(Fore.GREEN + "Let's begin the shooting phase!\n")
     print(Fore.WHITE)
 
     covered_board_player_1 = init_board(grid)
     covered_board_player_2 = init_board(grid)
-
-    turns = grid * grid
-    turns = [1, 2] * turns
-    for turn in turns:
-        if turn ==  1:
+    
+    turn = 1
+    while True:
+        if turn == 1:
             print("\n\nPlayer 1 turn")
             shot = ask_shooting_input(grid)
-            covered_board_player_1, board_2 = edit_boards_during_game(covered_board_player_1, board_2, shot)
+            covered_board_player_1, board_2 = edit_boards_during_game(covered_board_player_1, board_2, shot, turn)
             print_boards_during_game(covered_board_player_1, board_2)
-
-    #         # 2 update player 2 covered board, 
-    #         # 3 update player 2 ship board: so player 2 will be able to see the other players shoots
-    #         # 4 give feedback if it is a match or not
-
+            turn =  2
+            
             # if has_won(board_2):
             #     # need to check the appropiate ship board
             #     # if there is no more x on the board then we have a winner
@@ -329,9 +321,10 @@ def the_game():
         if turn == 2:
             print("\n\nPlayer 2 turn")
             shot = ask_shooting_input(grid)
-            covered_board_player_2, board_1 = edit_boards_during_game(covered_board_player_2, board_1, shot)
+            covered_board_player_2, board_1 = edit_boards_during_game(covered_board_player_2, board_1, shot, turn)
 
             print_boards_during_game(covered_board_player_2, board_1)
+            turn = 1
     #         # should show player 2 ship board: showing the other player's shoots
     #         # and player 1 covered board: showing only the player's shoots+
 
