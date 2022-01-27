@@ -251,34 +251,38 @@ def edit_boards_during_game(covered_board, ship_board, shot, turn):
         covered_board[row][column] = missed
         print("\nYou've missed!\n")
 
-    # place hits if:
-    # if ship_board[row][column] == ship_sign:
-    #     ship_board[row][column] = hit
-    #     covered_board[row][column] = hit
-    #     print("\nYou've hit a ship!\n")
-
     if turn == 1:
-        coordinates = PLAYER_1_COORDINATES
-    elif turn == 2:
         coordinates = PLAYER_2_COORDINATES
+    elif turn == 2:
+        coordinates = PLAYER_1_COORDINATES
     # shoot = ask_shooting_input(len(ship_board))
 
     shoot = (row, column)
     print(f'shoot: {shoot}')
 
-    for i, list in enumerate(coordinates):
-        if len(list) == 1:
-            for index, element in enumerate(list):
-                if shoot == element:
-                    list[index] = 'S'
-        else:
-            for index, element in enumerate(list):
-                if shoot == element:
-                    list[index] = 'H'
-                    print("\nYou've hit a ship!\n")
-                    if all(list):
-                        win_list = ['S' for i in list]
-                        coordinates[i] = win_list
+    # place hits if:
+    if ship_board[row][column] == ship_sign:
+        ship_board[row][column] = hit
+        covered_board[row][column] = hit
+        print("\nYou've hit a ship!\n")
+
+        #find coordinates of the ship that had just been hit
+        shot_ship_coordinate_list = []
+        for ship in coordinates:
+            for coo in ship:
+                if coo[0] == row and coo[1] == column:
+                    shot_ship_coordinate_list = ship
+                    break
+        #check if the ship coordinates are all hit
+        is_sunk = True
+        for coo in shot_ship_coordinate_list:
+            if ship_board[coo[0]][coo[1]] != hit:
+                is_sunk = False
+        
+        #if sunk, mark all coordinates of the ship with S
+        if is_sunk:
+            for coo in shot_ship_coordinate_list:
+                ship_board[coo[0]][coo[1]] = sunk
 
     return covered_board, ship_board
 
@@ -308,33 +312,29 @@ def the_game():
     while True:
         if turn == 1:
             print("\n\nPlayer 1 turn")
+            print_boards_during_game(covered_board_player_1, board_1)
             shot = ask_shooting_input(grid)
             covered_board_player_1, board_2 = edit_boards_during_game(covered_board_player_1, board_2, shot, turn)
-            print_boards_during_game(covered_board_player_1, board_2)
             turn =  2
             
-            # if has_won(board_2):
-            #     # need to check the appropiate ship board
-            #     # if there is no more x on the board then we have a winner
-            #     print("Player 1 wins!")
+            if has_won(PLAYER_2_COORDINATES, board_2):
+                print("Player 1 wins!")
+                return
+
+        input(f"Player {turn}'s turn. Press any button when ready.")
 
         if turn == 2:
             print("\n\nPlayer 2 turn")
+            print_boards_during_game(covered_board_player_2, board_2)
             shot = ask_shooting_input(grid)
             covered_board_player_2, board_1 = edit_boards_during_game(covered_board_player_2, board_1, shot, turn)
-
-            print_boards_during_game(covered_board_player_2, board_1)
             turn = 1
-    #         # should show player 2 ship board: showing the other player's shoots
-    #         # and player 1 covered board: showing only the player's shoots+
 
-    #         # 1 ask for user input - the coordinate where player two wants to shoot
-    #         # 2 update player 1 covered board
-    #         # 3 update player 1 ship board
-    #         # 4 give feedback if it is a match or not
-
-            # if has_won(board_1):
-            #     print("Player 2 wins!")
+            if has_won(PLAYER_1_COORDINATES, board_1):
+                print("Player 2 wins!")
+                return
+        
+        input(f"Player {turn}'s turn. Press any button when ready.")
 
 if __name__ == "__main__":
     the_game()
