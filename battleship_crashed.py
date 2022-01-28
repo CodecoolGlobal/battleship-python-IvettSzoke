@@ -116,8 +116,10 @@ def place_ships(board, turn):
                 break
         if turn==1:
             PLAYER_1_COORDINATES.append(collect_ship_coordinates(ship, direction, row_index, col_index))
+            # # print(PLAYER_1_COORDINATES)
         elif turn==2:
             PLAYER_2_COORDINATES.append(collect_ship_coordinates(ship, direction, row_index, col_index))
+            # # print(PLAYER_2_COORDINATES)
         mark_ship(board, ship, direction, row_index, col_index)
         print_board(board)
   
@@ -236,9 +238,9 @@ def has_won(ships, shooting_board):
 def edit_boards_during_game(covered_board, ship_board, shot, turn):
 
     ship_sign = 'X'
-    missed = 'M'
-    hit = 'H'
-    sunk = 'S'
+    missed = Fore.RED + 'M' + Fore.WHITE
+    hit = Fore.GREEN + 'H' + Fore.WHITE
+    sunk = Fore.BLUE + 'S' + Fore.WHITE
     row_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 
     row, column = row_letters.index(shot[0].upper()), shot[1] - 1
@@ -315,7 +317,7 @@ def the_game():
             turn =  2
             
             if has_won(PLAYER_2_COORDINATES, board_2):
-                print("Player 1 wins!")
+                print(Fore.GREEN + "\nPlayer 1 wins!\n")
                 return
 
         input(f"Player {turn}'s turn. Press any button when ready.")
@@ -328,7 +330,7 @@ def the_game():
             turn = 1
 
             if has_won(PLAYER_1_COORDINATES, board_1):
-                print("Player 2 wins!")
+                print(Fore.GREEN + "\nPlayer 2 wins!\n")
                 return
         
         input(f"Player {turn}'s turn. Press any button when ready.")
