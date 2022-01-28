@@ -184,6 +184,8 @@ def ready_board(occupied_coordinates, placement_area):
 class Window():
     def __init__(self):
         self.root = tk.Tk()
+        self.root.lift()
+        self.root.attributes("-topmost", True)
         self.root.title("Battleship")
         self.root.geometry('400x100')
         label = Label(self.root, text = "\nNext player's placement phase\n").pack()
